@@ -252,11 +252,15 @@ public class UtilAll {
         return (int) (crc32.getValue() & 0x7FFFFFFF);
     }
 
+    // byte 数组转十六进制字符串
     public static String bytes2string(byte[] src) {
         char[] hexChars = new char[src.length * 2];
         for (int j = 0; j < src.length; j++) {
+            // & 过之后，byte 转成 int
             int v = src[j] & 0xFF;
+            // 无符号右移 4 位，高位补 0 ，即取字节的高 4 位
             hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+            // 取字节低 4 位
             hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
         }
         return new String(hexChars);

@@ -68,6 +68,7 @@ public class ResponseFuture {
     }
 
     public RemotingCommand waitResponse(final long timeoutMillis) throws InterruptedException {
+        // 通过CountDownLatch把当前发送消息的线程阻塞了，那么什么时候会解除阻塞呢？因为是同步发送，所以肯定是在接收到接收方响应的时候才会解除阻塞
         this.countDownLatch.await(timeoutMillis, TimeUnit.MILLISECONDS);
         return this.responseCommand;
     }

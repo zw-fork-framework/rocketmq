@@ -734,7 +734,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
 
     /**
      * Register a callback to execute on message arrival for concurrent consuming.
-     *
+     * 注册并发消息事件监听器
      * @param messageListener message handling callback.
      */
     @Override
@@ -745,7 +745,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
 
     /**
      * Register a callback to execute on message arrival for orderly consuming.
-     *
+     * 注册顺序消费事件监听器
      * @param messageListener message handling callback.
      */
     @Override
@@ -756,10 +756,10 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
 
     /**
      * Subscribe a topic to consuming subscription.
-     *
+     * 基于主题订阅消息
      * @param topic topic to subscribe.
      * @param subExpression subscription expression.it only support or operation such as "tag1 || tag2 || tag3" <br>
-     * if null or * expression,meaning subscribe all
+     * if null or * expression,meaning subscribe all   消息过滤表达式，TAG或SQL92表达式
      * @throws MQClientException if there is any client error.
      */
     @Override
@@ -769,10 +769,10 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
 
     /**
      * Subscribe a topic to consuming subscription.
-     *
+     * 基于主题订阅消息
      * @param topic topic to consume.
-     * @param fullClassName full class name,must extend org.apache.rocketmq.common.filter. MessageFilter
-     * @param filterClassSource class source code,used UTF-8 file encoding,must be responsible for your code safety
+     * @param fullClassName full class name,must extend org.apache.rocketmq.common.filter. MessageFilter  过滤类全路径名
+     * @param filterClassSource class source code,used UTF-8 file encoding,must be responsible for your code safety  ：过滤类代码
      */
     @Override
     public void subscribe(String topic, String fullClassName, String filterClassSource) throws MQClientException {
@@ -794,7 +794,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
 
     /**
      * Un-subscribe the specified topic from subscription.
-     *
+     * 取消消息订阅
      * @param topic message topic
      */
     @Override

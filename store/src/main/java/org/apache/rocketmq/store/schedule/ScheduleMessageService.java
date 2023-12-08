@@ -52,6 +52,9 @@ import org.apache.rocketmq.store.PutMessageStatus;
 import org.apache.rocketmq.store.SelectMappedBufferResult;
 import org.apache.rocketmq.store.config.StorePathConfigHelper;
 
+/**
+ * RocketMQ定时消息实现类
+ */
 public class ScheduleMessageService extends ConfigManager {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
 
@@ -88,6 +91,7 @@ public class ScheduleMessageService extends ConfigManager {
         return queueId + 1;
     }
 
+    //获取延迟队列id
     public static int delayLevel2QueueId(final int delayLevel) {
         return delayLevel - 1;
     }
@@ -125,6 +129,9 @@ public class ScheduleMessageService extends ConfigManager {
         return storeTimestamp + 1000;
     }
 
+    /**
+     * start()方法根据延迟级别创建对应的定时任务，启动定时任务持久化存储延迟消息队列进度
+     */
     public void start() {
         if (started.compareAndSet(false, true)) {
             this.load();
@@ -148,6 +155,7 @@ public class ScheduleMessageService extends ConfigManager {
                 }
             }
 
+            // 创建定时任务，每隔10s持久化一次延迟队列的消息消费进度（延迟消息调进度），持久化频率可以通过flushDelayOffsetInterval配置属性进行设置
             this.deliverExecutorService.scheduleAtFixedRate(new Runnable() {
 
                 @Override

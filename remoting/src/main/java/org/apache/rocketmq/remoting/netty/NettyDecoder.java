@@ -39,6 +39,7 @@ public class NettyDecoder extends LengthFieldBasedFrameDecoder {
     public Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
         ByteBuf frame = null;
         try {
+            // 根据设置的解码规则获取到完整的frame
             frame = (ByteBuf) super.decode(ctx, in);
             if (null == frame) {
                 return null;

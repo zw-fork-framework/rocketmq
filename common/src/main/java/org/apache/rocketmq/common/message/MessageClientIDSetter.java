@@ -17,6 +17,8 @@
 package org.apache.rocketmq.common.message;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,21 +29,30 @@ public class MessageClientIDSetter {
     private static final int LEN;
     private static final char[] FIX_STRING;
     private static final AtomicInteger COUNTER;
-    private static long startTime;
-    private static long nextStartTime;
+    private static long startTime;      //当月1号
+    private static long nextStartTime;   // 下月1号
+
+    public static void main(String[] args) {
+        System.out.println(createUniqID());
+        System.out.println(Long.parseLong("7F000001080418B4AAC22C49BDA90000", 16));
+       // setStartTime(System.currentTimeMillis());
+    }
 
     static {
         byte[] ip;
         try {
-            ip = UtilAll.getIP();
+            ip = UtilAll.getIP();  //ip四个字节
         } catch (Exception e) {
             ip = createFakeIP();
         }
         LEN = ip.length + 2 + 4 + 4 + 2;
         ByteBuffer tempBuffer = ByteBuffer.allocate(ip.length + 2 + 4);
         tempBuffer.put(ip);
+        // 进程PID
         tempBuffer.putShort((short) UtilAll.getPid());
+        // 类加载器hashCode
         tempBuffer.putInt(MessageClientIDSetter.class.getClassLoader().hashCode());
+        // byte 数组转十六进制字符串
         FIX_STRING = UtilAll.bytes2string(tempBuffer.array()).toCharArray();
         setStartTime(System.currentTimeMillis());
         COUNTER = new AtomicInteger(0);
@@ -55,9 +66,9 @@ public class MessageClientIDSetter {
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
-        startTime = cal.getTimeInMillis();
+        startTime = cal.getTimeInMillis();  // millis指定时间戳当月1号
         cal.add(Calendar.MONTH, 1);
-        nextStartTime = cal.getTimeInMillis();
+        nextStartTime = cal.getTimeInMillis();  // millis指定时间戳下月1号
     }
 
     public static Date getNearlyTimeFromID(String msgID) {
@@ -112,9 +123,12 @@ public class MessageClientIDSetter {
     }
 
     public static String createUniqID() {
+        // 1 个字节，8 位，每 4 位一个十六进制字符
         char[] sb = new char[LEN * 2];
+        // 前缀FIX_STRING：ip地址(4字节)，进程号(2字节)，classLoader 的 hashcode(4字节)
         System.arraycopy(FIX_STRING, 0, sb, 0, FIX_STRING.length);
         long current = System.currentTimeMillis();
+        // 每月1号重新计算 startTime，避免时间戳差值无限增加
         if (current >= nextStartTime) {
             setStartTime(current);
         }
@@ -124,8 +138,10 @@ public class MessageClientIDSetter {
             diff = 0;
         }
         int pos = FIX_STRING.length;
+        // 当前时间减去当月一日
         UtilAll.writeInt(sb, pos, diff);
         pos += 8;
+        // 计数器
         UtilAll.writeShort(sb, pos, COUNTER.getAndIncrement());
         return new String(sb);
     }

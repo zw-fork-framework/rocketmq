@@ -52,10 +52,10 @@ public class ConsumerManageProcessor extends AsyncNettyRequestProcessor implemen
         throws RemotingCommandException {
         switch (request.getCode()) {
             case RequestCode.GET_CONSUMER_LIST_BY_GROUP:
-                return this.getConsumerListByGroup(ctx, request);
-            case RequestCode.UPDATE_CONSUMER_OFFSET:
+                return this.getConsumerListByGroup(ctx, request);  //===> 根据组名获取消费者列表
+            case RequestCode.UPDATE_CONSUMER_OFFSET:     // 更新ConsumerOffset的值的请求  更新消费偏移量的请求
                 return this.updateConsumerOffset(ctx, request);
-            case RequestCode.QUERY_CONSUMER_OFFSET:
+            case RequestCode.QUERY_CONSUMER_OFFSET:     // 查询消费者的偏移量
                 return this.queryConsumerOffset(ctx, request);
             default:
                 break;

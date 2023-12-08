@@ -424,10 +424,12 @@ public class RemotingCommand {
         // skip 8 bytes
         out.writeLong(0);
         int headerSize;
+        // 如果是 RocketMQ 序列化协议
         if (SerializeType.ROCKETMQ == serializeTypeCurrentRPC) {
             if (customHeader != null && !(customHeader instanceof FastCodesHeader)) {
                 this.makeCustomHeaderToNet();
             }
+            // 调用 RocketMQ 序列化协议编码。直接操作 ByteBuf，没有拷贝和新对象的创建。
             headerSize = RocketMQSerializable.rocketMQProtocolEncode(this, out);
         } else {
             this.makeCustomHeaderToNet();

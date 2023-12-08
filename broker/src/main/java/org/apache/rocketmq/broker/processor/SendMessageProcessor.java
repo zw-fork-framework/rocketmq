@@ -75,7 +75,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
                                           RemotingCommand request) throws RemotingCommandException {
         RemotingCommand response = null;
         try {
-            response = asyncProcessRequest(ctx, request).get();
+            response = asyncProcessRequest(ctx, request).get();  //同步就是调用异步方法返回future.get
         } catch (InterruptedException | ExecutionException e) {
             log.error("process SendMessage error, request : " + request.toString(), e);
         }
@@ -94,7 +94,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
             case RequestCode.CONSUMER_SEND_MSG_BACK:
                 return this.asyncConsumerSendMsgBack(ctx, request);
             default:
-                SendMessageRequestHeader requestHeader = parseRequestHeader(request);
+                SendMessageRequestHeader requestHeader = parseRequestHeader(request);  //===> 根据消息类型获取处理器
                 if (requestHeader == null) {
                     return CompletableFuture.completedFuture(null);
                 }
@@ -103,7 +103,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
                 if (requestHeader.isBatch()) {
                     return this.asyncSendBatchMessage(ctx, request, mqtraceContext, requestHeader);
                 } else {
-                    return this.asyncSendMessage(ctx, request, mqtraceContext, requestHeader);
+                    return this.asyncSendMessage(ctx, request, mqtraceContext, requestHeader);  //===>
                 }
         }
     }
@@ -324,7 +324,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
             }
             putMessageResult = this.brokerController.getTransactionalMessageService().asyncPrepareMessage(msgInner);
         } else {
-            putMessageResult = this.brokerController.getMessageStore().asyncPutMessage(msgInner);
+            putMessageResult = this.brokerController.getMessageStore().asyncPutMessage(msgInner);  //==>
         }
         return handlePutMessageResultFuture(putMessageResult, response, request, msgInner, responseHeader, mqtraceContext, ctx, queueIdInt);
     }

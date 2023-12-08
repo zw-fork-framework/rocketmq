@@ -30,23 +30,32 @@ import org.apache.rocketmq.common.constant.LoggerName;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.logging.InternalLoggerFactory;
 
+// MappedFileQueue是MappedFile的管理容器，MappedFileQueue是对存储目录的封装。
 public class MappedFileQueue {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
     private static final InternalLogger LOG_ERROR = InternalLoggerFactory.getLogger(LoggerName.STORE_ERROR_LOGGER_NAME);
 
     private static final int DELETE_FILES_BATCH_MAX = 10;
 
+    // commitlog 存储目录
     private final String storePath;
 
+    // 单个文件的存储大小
     protected final int mappedFileSize;
 
+    //MappedFile文件集合
     protected final CopyOnWriteArrayList<MappedFile> mappedFiles = new CopyOnWriteArrayList<MappedFile>();
 
+    // 创建MappedFile服务类
     private final AllocateMappedFileService allocateMappedFileService;
 
+    // 当前刷盘指针，表示该指针之前的所有数据全部持久化到磁盘
     protected long flushedWhere = 0;
+
+    // 当前数据提交指针，内存中ByteBuffer当前的写指针，该值大于等于flushedWhere
     private long committedWhere = 0;
 
+    // 刷盘时间戳
     private volatile long storeTimestamp = 0;
 
     public MappedFileQueue(final String storePath, int mappedFileSize,
@@ -75,6 +84,13 @@ public class MappedFileQueue {
         }
     }
 
+    /**
+     * 根据消息存储时间戳查找MappdFile。从MappedFile列表中第一个
+     * 文件开始查找，找到第一个最后一次更新时间大于待查找时间戳的文
+     * 件，如果不存在，则返回最后一个MappedFile
+     * @param timestamp
+     * @return
+     */
     public MappedFile getMappedFileByTime(final long timestamp) {
         Object[] mfs = this.copyMappedFiles(0);
 
@@ -438,10 +454,11 @@ public class MappedFileQueue {
 
     public boolean flush(final int flushLeastPages) {
         boolean result = true;
+        // 查找指定mappedFile
         MappedFile mappedFile = this.findMappedFileByOffset(this.flushedWhere, this.flushedWhere == 0);
         if (mappedFile != null) {
             long tmpTimeStamp = mappedFile.getStoreTimestamp();
-            int offset = mappedFile.flush(flushLeastPages);
+            int offset = mappedFile.flush(flushLeastPages);  //===> 真正的刷盘操作. 完成一定页数刷盘
             long where = mappedFile.getFileFromOffset() + offset;
             result = where == this.flushedWhere;
             this.flushedWhere = where;
@@ -468,7 +485,7 @@ public class MappedFileQueue {
 
     /**
      * Finds a mapped file by offset.
-     *
+     * 根据消息偏移量offset查找MappedFile
      * @param offset Offset.
      * @param returnFirstOnNotFound If the mapped file is not found, then return the first one.
      * @return Mapped file or null (when not found and returnFirstOnNotFound is <code>false</code>).
@@ -486,6 +503,8 @@ public class MappedFileQueue {
                         this.mappedFileSize,
                         this.mappedFiles.size());
                 } else {
+                    // 由于存储文件会被删除，第一个文件不一定是00000000000000000000.  不能直接使用offset%mappedFileSize
+                    // 根据偏移量计算文件位置的算法为：查找偏移量/单个文件的大小 - 第一个文件的起始偏移量/单个文件的大小
                     int index = (int) ((offset / this.mappedFileSize) - (firstMappedFile.getFileFromOffset() / this.mappedFileSize));
                     MappedFile targetFile = null;
                     try {

@@ -73,19 +73,29 @@ public class NamesrvController {
         this.configuration.setStorePathFromConfig(this.namesrvConfig, "configStorePath");
     }
 
+    /**
+     * 加载KV配置，先创建NettyServer网络处理对象，然后开启两个定时任务，在RocketMQ中此类定时任务统称为心跳检测。
+     * @return
+     */
     public boolean initialize() {
 
         this.kvConfigManager.load();
 
+        // 构建Netty服务器
         this.remotingServer = new NettyRemotingServer(this.nettyServerConfig, this.brokerHousekeepingService);
 
+        // netty 工作线程
         this.remotingExecutor =
             Executors.newFixedThreadPool(nettyServerConfig.getServerWorkerThreads(), new ThreadFactoryImpl("RemotingExecutorThread_"));
 
+        // 将工作线程池给netty
         this.registerProcessor();
 
+        // 定时任务1：NameServer每隔10s扫描一次Broker，移除处于未激活状态的Broker。
+        // 开启一个定时任务去扫描不活跃的broker，并剔除下线
         this.scheduledExecutorService.scheduleAtFixedRate(NamesrvController.this.routeInfoManager::scanNotActiveBroker, 5, 10, TimeUnit.SECONDS);
 
+        // 定时任务2：NameServer每隔10min打印一次KV配置
         this.scheduledExecutorService.scheduleAtFixedRate(NamesrvController.this.kvConfigManager::printAllPeriodically, 1, 10, TimeUnit.MINUTES);
 
         if (TlsSystemConfig.tlsMode != TlsMode.DISABLED) {
@@ -141,7 +151,7 @@ public class NamesrvController {
     }
 
     public void start() throws Exception {
-        this.remotingServer.start();
+        this.remotingServer.start();  //===> 启动Netty Server
 
         if (this.fileWatchService != null) {
             this.fileWatchService.start();

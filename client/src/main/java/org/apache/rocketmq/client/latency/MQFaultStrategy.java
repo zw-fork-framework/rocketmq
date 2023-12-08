@@ -56,20 +56,27 @@ public class MQFaultStrategy {
     }
 
     public MessageQueue selectOneMessageQueue(final TopicPublishInfo tpInfo, final String lastBrokerName) {
+        //如果开启了延迟故障规避，那么执行规避策略
         if (this.sendLatencyFaultEnable) {
             try {
+                // 轮询找下一个Broker，该Broker要么不在规避名单内，要么已经度过了规避期（发送消息失败会将目标Broker放进规避名单，沉默一段时间）
                 int index = tpInfo.getSendWhichQueue().incrementAndGet();
                 for (int i = 0; i < tpInfo.getMessageQueueList().size(); i++) {
+                    // 通过对队列数量取模，获取选定的Broker所在的位置
                     int pos = Math.abs(index++) % tpInfo.getMessageQueueList().size();
                     if (pos < 0)
                         pos = 0;
                     MessageQueue mq = tpInfo.getMessageQueueList().get(pos);
+                    // 判断Broker是否在规避时间内，如果不在规避时间内，就选择这个Broker，否则继续循环直至所有Broker都在规避时间内
                     if (latencyFaultTolerance.isAvailable(mq.getBrokerName()))
                         return mq;
                 }
 
+                // 选择一个相对延迟低的Broker
+                // 把所有规避列表中的Broker按延迟高低排序，并从延迟低的Broker中选择一个
                 final String notBestBroker = latencyFaultTolerance.pickOneAtLeast();
                 int writeQueueNums = tpInfo.getQueueIdByBroker(notBestBroker);
+                // 判断该Broker是否允许写消息
                 if (writeQueueNums > 0) {
                     final MessageQueue mq = tpInfo.selectOneMessageQueue();
                     if (notBestBroker != null) {
@@ -86,7 +93,8 @@ public class MQFaultStrategy {
 
             return tpInfo.selectOneMessageQueue();
         }
-
+        // 默认方案，没有开启故障规避配置的话，所有Broker的选择都是使用的该方案
+        // 否则就随机选一个Broker
         return tpInfo.selectOneMessageQueue(lastBrokerName);
     }
 
