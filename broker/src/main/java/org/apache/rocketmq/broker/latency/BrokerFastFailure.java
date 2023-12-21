@@ -28,6 +28,9 @@ import org.apache.rocketmq.logging.InternalLoggerFactory;
 import org.apache.rocketmq.remoting.netty.RequestTask;
 import org.apache.rocketmq.remoting.protocol.RemotingSysResponseCode;
 
+/**
+ * broker快速失败处理类.
+ */
 public class BrokerFastFailure {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl(
@@ -51,7 +54,7 @@ public class BrokerFastFailure {
         return null;
     }
 
-    public void start() {
+    public void start() {  //开启定时任务
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
@@ -63,7 +66,7 @@ public class BrokerFastFailure {
     }
 
     private void cleanExpiredRequest() {
-        while (this.brokerController.getMessageStore().isOSPageCacheBusy()) {
+        while (this.brokerController.getMessageStore().isOSPageCacheBusy()) {  // 判断Page Cache 是否繁忙。 客户端会选择其他Broker服务器进行重试
             try {
                 if (!this.brokerController.getSendThreadPoolQueue().isEmpty()) {
                     final Runnable runnable = this.brokerController.getSendThreadPoolQueue().poll(0, TimeUnit.SECONDS);
@@ -80,6 +83,7 @@ public class BrokerFastFailure {
             }
         }
 
+        // 清理过期请求。清理过期请求时，如果请求线程的创建时间到当前系统时间间隔大于 waitTimeMillsInSendQueue（默认 200ms，可以配置）就会清理这个请求
         cleanExpiredRequestInQueue(this.brokerController.getSendThreadPoolQueue(),
             this.brokerController.getBrokerConfig().getWaitTimeMillsInSendQueue());
 
@@ -107,7 +111,7 @@ public class BrokerFastFailure {
                     }
 
                     final long behind = System.currentTimeMillis() - rt.getCreateTimestamp();
-                    if (behind >= maxWaitTimeMillsInQueue) {
+                    if (behind >= maxWaitTimeMillsInQueue) {  // 数据积压。清除相关数据，并发送异常消息到客户端，客户端进行重试
                         if (blockingQueue.remove(runnable)) {
                             rt.setStopRun(true);
                             rt.returnResponse(RemotingSysResponseCode.SYSTEM_BUSY, String.format("[TIMEOUT_CLEAN_QUEUE]broker busy, start flow control for a while, period in queue: %sms, size of queue: %d", behind, blockingQueue.size()));

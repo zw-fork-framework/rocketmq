@@ -110,8 +110,8 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
 
     @Override
     public boolean rejectRequest() {
-        return this.brokerController.getMessageStore().isOSPageCacheBusy() ||
-            this.brokerController.getMessageStore().isTransientStorePoolDeficient();
+        return this.brokerController.getMessageStore().isOSPageCacheBusy() ||    //  Page Cache 繁忙
+            this.brokerController.getMessageStore().isTransientStorePoolDeficient();   // 开启 transientStorePoolEnable 配置的情况下，是否还有可用的 ByteBuffer.
     }
 
     private CompletableFuture<RemotingCommand> asyncConsumerSendMsgBack(ChannelHandlerContext ctx,

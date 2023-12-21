@@ -180,7 +180,10 @@ public abstract class NettyRemotingAbstract {
      * @param cmd request command.
      */
     public void processRequestCommand(final ChannelHandlerContext ctx, final RemotingCommand cmd) {
+        // Rocket-Client端将不同的请求定义不同的请求命令CODE, 服务端会将客户端请求进行分类，每个命令或每类请求命令定义一个处理器(NettyRequestProcessor)，
+        // 然后每一个NettyRequestProcessor绑定到一个单独的线程池，进行命令处理，不同类型的请求将使用不同的线程池进行处理，实现线程隔离。
         final Pair<NettyRequestProcessor, ExecutorService> matched = this.processorTable.get(cmd.getCode());
+        // Pair主要用来封装NettyRequestProcessor与ExecuteService的绑定关系。
         final Pair<NettyRequestProcessor, ExecutorService> pair = null == matched ? this.defaultRequestProcessor : matched;
         final int opaque = cmd.getOpaque();
 
@@ -234,7 +237,7 @@ public abstract class NettyRemotingAbstract {
                 }
             };
 
-            if (pair.getObject1().rejectRequest()) {
+            if (pair.getObject1().rejectRequest()) {   // SendMessageProcessor.rejectRequest() 判断broker是否限流
                 final RemotingCommand response = RemotingCommand.createResponseCommand(RemotingSysResponseCode.SYSTEM_BUSY,
                         "[REJECTREQUEST]system busy, start flow control for a while");
                 response.setOpaque(opaque);

@@ -23,6 +23,14 @@ public class RemotingSysResponseCode {
 
     public static final int SYSTEM_ERROR = 1;
 
+    /**
+     * 1。 broker定时任务处理：BrokerFastFailure
+     *      1） Page Cache 繁忙
+     *      2） Producer消息在Broker中发生积压
+     * 2. broker收到客户端请求
+     *      1) 收到Producer请求时，发现Page Cache繁忙 或 transientStorePoolEnable开启时，无可用ByteBuffer
+     *      2） broker通过线程池处理客户端请求时，发生异常。如果不是单向请求（Oneway），向Producer返回SYSTEM_BUSY异常
+     */
     public static final int SYSTEM_BUSY = 2;
 
     public static final int REQUEST_CODE_NOT_SUPPORTED = 3;

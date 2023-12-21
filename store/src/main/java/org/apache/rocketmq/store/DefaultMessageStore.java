@@ -545,10 +545,10 @@ public class DefaultMessageStore implements MessageStore {
     @Override
     public boolean isOSPageCacheBusy() {
         long begin = this.getCommitLog().getBeginTimeInLock();
-        long diff = this.systemClock.now() - begin;
+        long diff = this.systemClock.now() - begin;  // 计算CommitLog锁持有时长 = 当前时间 - 获取锁开始时间
 
         return diff < 10000000
-            && diff > this.messageStoreConfig.getOsPageCacheBusyTimeOutMills();
+            && diff > this.messageStoreConfig.getOsPageCacheBusyTimeOutMills();    // page cache timeout默认配置的时间是1000ms，也即1s
     }
 
     @Override
@@ -1659,7 +1659,7 @@ public class DefaultMessageStore implements MessageStore {
 
     @Override
     public boolean isTransientStorePoolDeficient() {
-        return remainTransientStoreBufferNumbs() == 0;
+        return remainTransientStoreBufferNumbs() == 0;    //开启 transientStorePoolEnable 配置的情况下，是否还有可用的 ByteBuffer.  未开启时，可用长度默认为Integer.MAX_VALUE
     }
 
     @Override
