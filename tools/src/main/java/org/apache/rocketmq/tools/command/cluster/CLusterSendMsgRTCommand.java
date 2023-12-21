@@ -20,7 +20,7 @@ package org.apache.rocketmq.tools.command.cluster;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
@@ -30,8 +30,8 @@ import org.apache.commons.cli.Options;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.common.protocol.body.ClusterInfo;
 import org.apache.rocketmq.remoting.RPCHook;
+import org.apache.rocketmq.remoting.protocol.body.ClusterInfo;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.apache.rocketmq.tools.command.SubCommand;
 import org.apache.rocketmq.tools.command.SubCommandException;
@@ -48,7 +48,7 @@ public class CLusterSendMsgRTCommand implements SubCommand {
 
     @Override
     public String commandDesc() {
-        return "List All clusters Message Send RT";
+        return "List All clusters Message Send RT.";
     }
 
     @Override
@@ -93,7 +93,7 @@ public class CLusterSendMsgRTCommand implements SubCommand {
             producer.start();
 
             ClusterInfo clusterInfoSerializeWrapper = defaultMQAdminExt.examineBrokerClusterInfo();
-            HashMap<String, Set<String>> clusterAddr = clusterInfoSerializeWrapper
+            Map<String, Set<String>> clusterAddr = clusterInfoSerializeWrapper
                 .getClusterAddrTable();
 
             Set<String> clusterNames = null;
@@ -113,7 +113,7 @@ public class CLusterSendMsgRTCommand implements SubCommand {
                 .getOptionValue('m').trim();
 
             if (commandLine.hasOption('c')) {
-                clusterNames = new TreeSet<String>();
+                clusterNames = new TreeSet<>();
                 clusterNames.add(commandLine.getOptionValue('c').trim());
             } else {
                 clusterNames = clusterAddr.keySet();

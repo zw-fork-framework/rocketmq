@@ -16,22 +16,22 @@
  */
 package org.apache.rocketmq.namesrv.routeinfo;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.apache.rocketmq.common.TopicConfig;
-import org.apache.rocketmq.common.protocol.body.ClusterInfo;
-import org.apache.rocketmq.common.protocol.body.TopicList;
-import org.apache.rocketmq.common.protocol.route.BrokerData;
-import org.apache.rocketmq.common.protocol.route.QueueData;
-import org.apache.rocketmq.common.protocol.route.TopicRouteData;
+import org.apache.rocketmq.common.namesrv.NamesrvConfig;
+import org.apache.rocketmq.remoting.protocol.body.ClusterInfo;
+import org.apache.rocketmq.remoting.protocol.body.TopicList;
+import org.apache.rocketmq.remoting.protocol.route.BrokerData;
+import org.apache.rocketmq.remoting.protocol.route.QueueData;
+import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -47,14 +47,14 @@ public class RouteInfoManagerStaticRegisterTest extends RouteInfoManagerTestBase
 
     @Before
     public void setup() {
-        routeInfoManager = new RouteInfoManager();
+        routeInfoManager = new RouteInfoManager(new NamesrvConfig(), null);
         cluster = registerCluster(routeInfoManager,
-                clusterName,
-                brokerPrefix,
-                3,
-                3,
-                topicPrefix,
-                10);
+            clusterName,
+            brokerPrefix,
+            3,
+            3,
+            topicPrefix,
+            10);
     }
 
     @After
@@ -69,7 +69,7 @@ public class RouteInfoManagerStaticRegisterTest extends RouteInfoManagerTestBase
     @Test
     public void testGetAllClusterInfo() {
         ClusterInfo clusterInfo = routeInfoManager.getAllClusterInfo();
-        HashMap<String, Set<String>> clusterAddrTable = clusterInfo.getClusterAddrTable();
+        Map<String, Set<String>> clusterAddrTable = clusterInfo.getClusterAddrTable();
 
         assertEquals(1, clusterAddrTable.size());
         assertEquals(cluster.getAllBrokerName(), clusterAddrTable.get(clusterName));

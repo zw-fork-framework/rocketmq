@@ -43,8 +43,8 @@ public class Producer {
          */
         DefaultMQProducer producer = new DefaultMQProducer(PRODUCER_GROUP);
 
-        //producer.setNamespace("hehe");  // è®¾ç½®ç”Ÿäº§è€…åç§°ç©ºé—´ã€‚åˆ›å»ºçš„topicå°†å¸¦è¯¥åç§°ç©ºé—´ã€‚å¦‚ï¼šhehe%TopicTest
-        //producer.setSendLatencyFaultEnable();  å¼€å¯æ•…éšœè§„é¿ç­–ç•¥
+        //producer.setNamespace("hehe");  // ÉèÖÃÉú²úÕßÃû³Æ¿Õ¼ä¡£´´½¨µÄtopic½«´ø¸ÃÃû³Æ¿Õ¼ä¡£Èç£ºhehe%TopicTest
+        //producer.setSendLatencyFaultEnable();  ¿ªÆô¹ÊÕÏ¹æ±Ü²ßÂÔ
         /*
          * Specify name server addresses.
          *
@@ -56,7 +56,7 @@ public class Producer {
          * </pre>
          */
         // Uncomment the following line while debugging, namesrvAddr should be set to your local address
-        producer.setNamesrvAddr(DEFAULT_NAMESRVADDR);
+        // producer.setNamesrvAddr(DEFAULT_NAMESRVADDR);
 
         /*
          * Launch the instance.
@@ -70,12 +70,12 @@ public class Producer {
                  * Create a message instance, specifying topic, tag and message body.
                  */
                 Message msg = new Message(TOPIC /* Topic */,
-                        TAG /* Tag æ¶ˆæ¯tagï¼Œç”¨äºæ¶ˆæ¯è¿‡æ»¤*/,
-                        ("Hello RocketMQ " + i).getBytes(RemotingHelper.DEFAULT_CHARSET) /* Message body */
+                        TAG /* Tag ÏûÏ¢tag£¬ÓÃÓÚÏûÏ¢¹ıÂË*/,
+                    ("Hello RocketMQ " + i).getBytes(RemotingHelper.DEFAULT_CHARSET) /* Message body */
                 );
 
-                //  msg.setKeys("key1 key2"); //æ¶ˆæ¯ç´¢å¼•é”®ï¼Œç”¨ç©ºæ ¼éš”å¼€ï¼ŒRocketMQå¯ä»¥æ ¹æ®è¿™äº›keyï¼ˆé”®ï¼‰å¿«é€Ÿæ£€ç´¢æ¶ˆæ¯
-                //  msg.setWaitStoreMsgOK(false); //æ¶ˆæ¯å‘é€æ—¶æ˜¯å¦ç­‰æ¶ˆæ¯å­˜å‚¨å®Œæˆåå†è¿”å›
+                //  msg.setKeys("key1 key2"); //ÏûÏ¢Ë÷Òı¼ü£¬ÓÃ¿Õ¸ñ¸ô¿ª£¬RocketMQ¿ÉÒÔ¸ù¾İÕâĞ©key£¨¼ü£©¿ìËÙ¼ìË÷ÏûÏ¢
+                //  msg.setWaitStoreMsgOK(false); //ÏûÏ¢·¢ËÍÊ±ÊÇ·ñµÈÏûÏ¢´æ´¢Íê³ÉºóÔÙ·µ»Ø
 
                 /*
                  * Call send message to deliver message to one of brokers.
@@ -123,7 +123,7 @@ public class Producer {
         }
 
         /*
-         * Shut down once the producer instance is not longer in use.
+         * Shut down once the producer instance is no longer in use.
          */
         producer.shutdown();
     }
